@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.HIT.weisongzhao</groupId>
+    <artifactId>srFRCJ_</artifactId>
+    <version>0.1.11</version>
+    <name>srFRCJ</name>
+    <description>ImageJ/Fiji implementation of sFRC, sFSC and srFRC.</description>
+
+    <!--
+      Platform-specific build: linux-x86_64
+      ND4J 1.0.0-beta7 uses native JavaCPP/OpenBLAS binaries selected by classifier.
+      The generic Java JARs and exactly one platform-native set are declared explicitly
+      so that the Fiji runtime bundle is deterministic and does not accidentally contain
+      native libraries for another operating system.
+    -->
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>1.8</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <maven.minimum.version>3.6.3</maven.minimum.version>
+
+        <nd4j.version>1.0.0-beta7</nd4j.version>
+        <javacpp.version>1.5.3</javacpp.version>
+        <openblas.version>0.3.9-1-1.5.3</openblas.version>
+        <platform.classifier>linux-x86_64</platform.classifier>
+        <platform.label>linux-x86_64</platform.label>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <!-- Supplied by Fiji; do not copy another ImageJ core JAR into Fiji/jars. -->
+        <dependency>
+            <groupId>net.imagej</groupId>
+            <artifactId>ij</artifactId>
+            <version>1.54p</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>pl.edu.icm</groupId>
+            <artifactId>JLargeArrays</artifactId>
+            <version>1.6</version>
+        </dependency>
+
+        <!-- ND4J Java/API JARs used by the plugin. -->
+        <dependency>
+            <groupId>org.nd4j</groupId>
+            <artifactId>nd4j-api</artifactId>
+            <version>${nd4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.nd4j</groupId>
+            <artifactId>nd4j-common</artifactId>
+            <version>${nd4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.nd4j</groupId>
+            <artifactId>nd4j-native-api</artifactId>
+            <version>${nd4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.nd4j</groupId>
+            <artifactId>nd4j-native</artifactId>
+            <version>${nd4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.nd4j</groupId>
+            <artifactId>nd4j-native</artifactId>
+            <version>${nd4j.version}</version>
+            <classifier>${platform.classifier}</classifier>
+        </dependency>
+
+        <!-- Shaded compatibility JARs used by ND4J beta7. -->
+        <dependency>
+            <groupId>org.nd4j</groupId>
+            <artifactId>guava</artifactId>
+            <version>${nd4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.nd4j</groupId>
+            <artifactId>protobuf</artifactId>
+            <version>${nd4j.version}</version>
+        </dependency>
+
+        <!-- JavaCPP + OpenBLAS: generic wrappers + matching native classifier. -->
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>javacpp</artifactId>
+            <version>${javacpp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>javacpp</artifactId>
+            <version>${javacpp.version}</version>
+            <classifier>${platform.classifier}</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>openblas</artifactId>
+            <version>${openblas.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>openblas</artifactId>
+            <version>${openblas.version}</version>
+            <classifier>${platform.classifier}</classifier>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>srFRCJ_-0.1.11</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <id>enforce-maven</id>
+                        <goals><goal>enforce</goal></goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>[${maven.minimum.version},)</version>
+                                </requireMavenVersion>
+                                <requireJavaVersion>
+                                    <version>[1.8,)</version>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                </configuration>
+            </plugin>
+
+            <!--
+              Create a Fiji-ready dependency directory.  excludeTransitive=true is
+              deliberate: it reproduces the compact dependency set already used by
+              this project instead of copying every transitive logging/utility JAR
+              into Fiji, which could conflict with Fiji's own shared libraries.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.7.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-fiji-runtime-jars</id>
+                        <phase>package</phase>
+                        <goals><goal>copy-dependencies</goal></goals>
+                        <configuration>
+                            <includeScope>runtime</includeScope>
+                            <excludeTransitive>true</excludeTransitive>
+                            <excludeArtifactIds>ij</excludeArtifactIds>
+                            <outputDirectory>${project.build.directory}/fiji-${platform.label}/jars</outputDirectory>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
