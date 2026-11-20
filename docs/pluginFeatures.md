@@ -1,11 +1,10 @@
 # Plugin features & basic usage — srFRCJ (Fiji/ImageJ)
 
-This page covers the **first settings dialog** for the three main srFRCJ plugins. It follows the parameter labels and defaults in the Java plugin implementation. For installation, refer to the [main README](../README.md#installation).
+This page introduces the **basic settings dialogs** and typical outputs of the three srFRCJ plugins. Optional controls are documented in [Advanced Parameters](advancedParameters.md). For installation, see the [main README](../README.md#installation).
 
-Open the input image or stack in Fiji, then choose the appropriate tool from **Plugins → srFRC**. Enter pixel and voxel sizes in **nanometres (nm)**; for example, a 60 nm pixel size is entered as `60`.
+Open an image or stack in Fiji and select a tool under **Plugins → srFRC**. All pixel and voxel spacings are entered in **nanometres (nm)** (for example, enter `60` for 60 nm). When available, Fiji **Image > Properties** supplies initial values for the Pixel Size fields; **values entered in the plugin dialog take precedence** and are used for calculation.
 
 ## sFRC — global 2D resolution
-
 
 ![sFRC plugin demonstration — upper image](../img/sFRC-1.png)
 
@@ -13,21 +12,22 @@ Open the input image or stack in Fiji, then choose the appropriate tool from **P
 
 **Menu:** `Plugins → srFRC → sFRC`
 
-sFRC estimates the global lateral resolution from a single image or a pair of acquired frames and can display the correlation curve.
+sFRC estimates global lateral resolution from one 2D image or two adjacent acquired frames. In single-frame mode, it generates complementary observations from the input image. The correlation curve for the current frame/pair is displayed automatically.
 
 | Basic dialog field | Default / choices | Purpose |
 | --- | --- | --- |
-| **Pixel Size** | Image calibration or manually entered value (**nm**) | Lateral pixel spacing of the original image. |
-| **If SingleFrame** | `true` (`true` / `false`) | `true`: construct complementary observations from one image; `false`: analyze adjacent acquired frames. |
-| **Threshold** | `1/7 hard threshold` (`1/7 hard threshold` / `3-sigma`) | Choose the correlation cutoff used to estimate resolution. |
-| **Plot** | `auto` (`auto` / `true` / `false`) | `auto`: preview the current frame's FRC curve; `true`: the same current-frame preview; `false`: suppress curve display. In paired mode, the preview uses the current frame and the following frame. Plotting does not determine whether other frames are computed. |
-| **Advanced Settings** | `false` (`true` / `false`) | Leave `false` for the basic workflow; `true` opens a separate settings dialog. |
+| **Pixel Size** | Image properties or user input (**nm**) | Lateral pixel spacing of the original image. |
+| **If SingleFrame** | `true` (`true` / `false`) | `true`: generate complementary observations from one image; `false`: analyze adjacent acquired frames. |
+| **Threshold** | `1/7 hard threshold` (`1/7 hard threshold` / `3-sigma`) | Correlation cutoff used to estimate resolution. |
+| **Advanced Settings** | `false` (`true` / `false`) | Open a separate dialog for optional controls. |
 
-**Basic workflow:** Open the input 2D image or multi-frame stack, enter its actual pixel size, choose single-frame or paired-frame analysis, select a threshold, and leave **Plot = auto** to view the FRC curve. Read the estimated resolution (nm) alongside the selected cutoff.
+**Basic workflow:** Open a 2D image or multi-frame stack, confirm the actual **Pixel Size**, select single-frame or paired-frame analysis and the correlation threshold, then run. Read the estimated resolution in **nm** in the results and inspect the automatically displayed current-frame FRC curve. **There is no `Plot` control in the basic dialog.**
+
+**Stack behavior:** In advanced settings, **Stack Batch Processing** is enabled by default. With Batch ON, all frames (single-frame mode) or adjacent frame pairs (paired mode) are analyzed, but only the current frame/pair's correlation curve is displayed. With Batch OFF, only the currently selected frame/pair is analyzed. Other advanced options include **Apply Correction** (default `true`) and **Show Resampled images** (default `false`).
 
 ## sFSC — lateral and axial 3D resolution
 
-For very large 3D stacks, sFSC may cancel before computation and ask you to crop the input; see [Advanced Parameters](advancedParameters.md#large-3d-input-memory-protection).
+For very large 3D stacks, sFSC may stop before computation and request a smaller input; see [Advanced Parameters — sFSC](advancedParameters.md#sfsc).
 
 ![sFSC plugin demonstration — upper image](../img/sFSC-1.png)
 
@@ -35,21 +35,23 @@ For very large 3D stacks, sFSC may cancel before computation and ask you to crop
 
 **Menu:** `Plugins → srFRC → sFSC`
 
-sFSC estimates lateral and axial resolution separately from a 3D stack.
+sFSC estimates lateral (**XY**) and axial (**Z**) resolution from a 3D volume or a pair of acquired volumes. **Directional resolution inference (DRI)** uses directional correlation cutoffs to infer axial resolution.
 
 | Basic dialog field | Default / choices | Purpose |
 | --- | --- | --- |
-| **If SingleFrame** | `true` (`true` / `false`) | `true`: use a single acquired 3D volume; `false`: analyze a pair of acquired volumes. |
-| **3D Stack 1 (paired mode)** | Current open image | Choose Volume A from open 3D stacks. Disabled and ignored in single-frame mode. |
-| **3D Stack 2 (paired mode)** | Another open image, when present | Choose Volume B (same XY/Z dimensions). Disabled and ignored in single-frame mode. |
-| **Pixel Size (XY)** | Image calibration or manually entered value (**nm**) | Lateral voxel spacing. |
-| **Pixel Size (Z)** | Image calibration or manually entered value (**nm**) | Spacing between successive z-planes. |
-| **Threshold** | `1/7 hard threshold` (`1/7 hard threshold` / `3-sigma`) | Choose the FSC/FRC correlation cutoff. |
-| **Advanced Settings** | `false` (`true` / `false`) | Leave `false` for the basic workflow; `true` opens a separate settings dialog. |
+| **If SingleFrame** | `true` (`true` / `false`) | `true`: generate a complementary pair from one 3D volume; `false`: analyze two acquired volumes. |
+| **3D Stack 1 (paired mode)** | Current open image | Select the first volume; disabled and ignored in single-frame mode. |
+| **3D Stack 2 (paired mode)** | Another open image, when available | Select the second volume; disabled and ignored in single-frame mode. |
+| **Pixel Size (XY)** | Image properties or user input (**nm**) | Lateral voxel spacing. |
+| **Pixel Size (Z)** | Image properties or user input (**nm**) | Axial spacing between successive z-planes. |
+| **Threshold** | `1/7 hard threshold` (`1/7 hard threshold` / `3-sigma`) | Correlation cutoff used for the FSC/FRC analysis. |
+| **Advanced Settings** | `false` (`true` / `false`) | Open a separate dialog for optional controls. |
 
-**Basic workflow:** For single-frame mode, activate one 3D volume and leave `If SingleFrame=true`; the two paired selectors have no effect. For paired mode, open both `Volume_A.tif` and `Volume_B.tif` in Fiji, set `If SingleFrame=false`, and select each file in the two `3D Stack` menus. Both inputs must be single-channel Z stacks with matching dimensions and one time point. The same two-channel hyperstack may also be selected twice to use channels 1 and 2 (legacy workflow). Enter the actual **XY** and **Z** voxel sizes in nm, select a threshold, and run. Interpret lateral and axial resolutions separately.
+**Basic workflow:** For single-frame mode, activate a 3D volume and leave **If SingleFrame = true**; the two stack selectors are inactive. For paired mode, open both volumes, set **If SingleFrame = false**, and select each in the corresponding `3D Stack` field. Two separate volumes must be single-channel Z stacks with matching XY dimensions and Z slice counts, and one time point each. For the legacy two-channel workflow, the same two-channel 3D hyperstack can be selected in both fields. Confirm the actual **XY** and **Z** voxel spacings and run. Interpret the XY and Z resolution estimates separately.
 
-**Note:** Unlike sFRC and srFRC, the basic sFSC dialog does **not** include a `Plot` field. Its `Plot Fitting Curve` option is available only in the separate advanced settings dialog.
+**Advanced plotting and sampling:** None of the three basic dialogs has a `Plot` field. The sFSC advanced dialog retains **Plot Fitting Curve** (default `false`) for the optional DRI fitting plot. **Z Sampling** is also optional and **OFF by default**; it is not enabled automatically. If Z Sampling is disabled in single-frame mode and a finite axial estimate is obtained, the program may display an informational note. This note does not mean the program has detected an overoptimistic result.
+
+**Result interpretation:** The displayed directional profile and reported **E_DRI** describe the DRI fit. E_DRI is a directional fitting-consistency metric, **not** an error measured against ground truth. See [Advanced Parameters](advancedParameters.md#sfsc) for fitting-angle recommendations and detailed interpretation.
 
 ## srFRC — local 2D resolution mapping
 
@@ -59,20 +61,23 @@ sFSC estimates lateral and axial resolution separately from a 3D stack.
 
 **Menu:** `Plugins → srFRC → srFRC - resolution mapping`
 
-srFRC calculates a spatial map of local resolution by applying FRC to overlapping image regions.
+srFRC estimates spatially varying resolution by applying FRC to overlapping regions of a 2D image or image stack.
 
 | Basic dialog field | Default / choices | Purpose |
 | --- | --- | --- |
-| **Block Size** | `64` pixels | Side length of each local analysis window. |
-| **Skip** | `2` pixels | Step between successive local window positions. |
-| **Pixel Size** | Image calibration or manually entered value (**nm**) | Lateral pixel spacing of the input image. |
-| **If SingleFrame** | `true` (`true` / `false`) | `true`: use complementary observations derived from one image; `false`: analyze two acquired frames. |
-| **Threshold** | `3-sigma` (`1/7 hard threshold` / `3-sigma`) | Choose the local correlation cutoff. |
-| **Plot** | `auto` (`auto` / `true` / `false`) | `auto`: show the current frame's resolution map; `true`: the same current-frame preview; `false`: hide the map preview. In paired mode, the preview corresponds to the current frame and the next frame. Computation of other frames is independent of the preview. |
-| **Advanced Settings** | `false` (`true` / `false`) | Leave `false` for the basic workflow; `true` opens a separate settings dialog. |
+| **Block Size** | `64` pixels | Side length of the local analysis window. |
+| **Skip** | `2` pixels | Step between successive window positions. |
+| **Pixel Size** | Image properties or user input (**nm**) | Lateral spacing of the original image. |
+| **If SingleFrame** | `true` (`true` / `false`) | `true`: generate complementary observations from each image; `false`: analyze adjacent acquired frames. |
+| **Threshold** | `3-sigma` (`1/7 hard threshold` / `3-sigma`) | Local correlation cutoff. |
+| **Advanced Settings** | `false` (`true` / `false`) | Open a separate dialog for optional controls. |
 
-**Basic workflow:** Open a 2D image or multi-frame stack, set **Block Size**, **Skip**, and **Pixel Size**, choose the frame mode and threshold, and leave **Plot = auto** to inspect the local resolution map. Smaller *valid* resolution values indicate finer local detail; excluded background regions should not be interpreted as valid measurements.
+**Basic workflow:** Open a 2D image or stack, confirm **Block Size**, **Skip**, and **Pixel Size**, select the frame mode and threshold, then run. The resolution map is displayed automatically; **there is no `Plot` control in the basic dialog**. Smaller **valid** resolution values indicate finer local detail. A map value of **0** denotes background or an unavailable estimate, **not** a resolution of 0 nm.
+
+**Stack and colorbar behavior:** **Stack Batch Processing** is ON by default. When Batch is ON and **Monitor Changes** is OFF, srFRC displays a **Float32 quantitative resolution-map stack** and an **RGB preview stack with a separate colorbar for each frame**. Color scaling is frame-specific, so the same color in different frames need not represent the same resolution. Use the Float32 stack—not the RGB display—for quantitative measurements. With Batch OFF, only the current frame/pair is analyzed and displayed.
+
+**Background options:** Automatic background estimation is enabled by default. In advanced settings, **Monitor Changes** compares several background settings for the current frame/pair and automatically disables Batch Processing. When both automatic background estimation and monitoring are disabled, **Background Intensity** provides a manual threshold. Background intensity thresholds are distinct from the selected FRC correlation threshold.
 
 ---
 
-For additional controls and diagnostics, see **[Advanced Parameters](advancedParameters.md)**.
+For additional controls, diagnostic messages and result interpretation, see **[Advanced Parameters](advancedParameters.md)**.
